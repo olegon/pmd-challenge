@@ -1,5 +1,5 @@
 resource "aws_ecs_task_definition" "pmd" {
-  family                   = "service"
+  family                   = "apex-pmd"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   cpu                      = 256
