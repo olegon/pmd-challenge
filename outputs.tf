@@ -16,7 +16,7 @@ output "get_server_log_curl_command" {
 }
 
 output "post_token_curl_command" {
-  value = "curl -i -X POST 'http://${module.alb.lb_dns_name}//oauth/token?username=admin&password=n2c99skEwmWvt3Q1p7d11ne4FKwPqCs85N2RvwNdlfMw4I3NL' -H 'Authorization: Basic ${base64encode("${var.app_username}:${var.app_password}")}'"
+  value = "curl -i -X POST 'http://${module.alb.lb_dns_name}//oauth/token?username=admin&password=n2c99skEwmWvt3Q1p7d11ne4FKwPqCs85N2RvwNdlfMw4I3NL' -u '${var.app_username}:${var.app_password}'"
 }
 
 output "post_run_curl_command" {
