@@ -22,16 +22,3 @@ output "post_token_curl_command" {
 output "post_run_curl_command" {
   value = "curl -X POST 'http://${module.alb.lb_dns_name}//apexPMD' -d '{ \"backUrl\": \"...salesforce uri...\", \"sId\": \"...salesforce token...\", \"jobId\": \"...unique job id...\", \"attList\": [], \"attRuls\": [], \"branchId\": \"\" }'"
 }
-
-
-output "docker_cat_index_js_file" {
-  value = "docker run -ti --rm flosumhub/apex-pmd:2.5.0 cat index.js"
-}
-
-output "docker_cat_apex_js_file" {
-  value = "docker run -ti --rm flosumhub/apex-pmd:2.5.0 cat ApexPMD.js"
-}
-
-
-
-

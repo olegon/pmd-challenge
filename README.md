@@ -42,10 +42,10 @@ If you trust me, try to read the source code.
 
 ```bash
 # index.js
-eval $(terraform output --raw docker_cat_index_js_file)
+docker run -ti --rm flosumhub/apex-pmd:2.5.0 cat index.js
 
 # ApexMD.js
-eval $(terraform output --raw docker_cat_apex_js_file)
+docker run -ti --rm flosumhub/apex-pmd:2.5.0 cat ApexPMD.js
 ```
 
 ## Is this workload expensive?
