@@ -1,48 +1,33 @@
-module "alb" {
+module "elb" {
   source  = "terraform-aws-modules/alb/aws"
   version = "~> 8.0"
 
-  name = "pmd-alb"
+  name = "pmd-elb"
 
-  load_balancer_type = "application"
+  load_balancer_type = "network"
+  internal           = true
 
   vpc_id  = module.vpc.vpc_id
-  subnets = module.vpc.public_subnets
-  security_groups = [
-    aws_security_group.alb.id
-  ]
+  subnets = module.vpc.private_subnets
 
   access_logs = {
-    bucket = var.elb_logs_bucket_name
+    bucket = "${data.aws_caller_identity.current.account_id}-pmd-elb-bucket"
   }
 
   target_groups = [
     {
       name_prefix      = "pmd-"
-      backend_protocol = "HTTP"
+      backend_protocol = "TCP"
       backend_port     = 5000
       target_type      = "ip"
     }
   ]
 
-  #   https_listeners = [
-  #     {
-  #       port               = 443
-  #       protocol           = "HTTPS"
-  #       certificate_arn    = "arn:aws:iam::123456789012:server-certificate/test_cert-123456789012"
-  #       target_group_index = 0
-  #     }
-  #   ]
-
   http_tcp_listeners = [
     {
       port               = 80
-      protocol           = "HTTP"
+      protocol           = "TCP"
       target_group_index = 0
     }
-  ]
-
-  depends_on = [
-    module.s3_bucket_elb_logs
   ]
 }

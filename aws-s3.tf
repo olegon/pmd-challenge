@@ -1,7 +1,7 @@
 module "s3_bucket_elb_logs" {
   source = "terraform-aws-modules/s3-bucket/aws"
 
-  bucket = var.elb_logs_bucket_name
+  bucket = "${data.aws_caller_identity.current.account_id}-pmd-elb-bucket"
 
   # elb logging
   acl                            = "log-delivery-write"

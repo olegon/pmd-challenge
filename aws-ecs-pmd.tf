@@ -16,7 +16,8 @@ resource "aws_ecs_task_definition" "pmd" {
       logConfiguration = {
         logDriver = "awslogs",
         options = {
-          awslogs-create-group  = "true"
+          # Im creating the log group because I want to control retention period
+          # awslogs-create-group  = "true"
           awslogs-group         = "ecs-awslog-flosunhub-apex-pmd"
           awslogs-region        = data.aws_region.current.name
           awslogs-stream-prefix = "ecs-awslog-flosunhub-apex-pmd"
@@ -29,7 +30,7 @@ resource "aws_ecs_task_definition" "pmd" {
         }
       ]
       environment = [
-        # following security best practices! haha
+        # following security best practices! :p
         { "name" : "username", "value" : var.app_username },
         { "name" : "password", "value" : var.app_password }
       ]
@@ -41,11 +42,11 @@ resource "aws_ecs_service" "pmd" {
   name            = "apex-pmd"
   cluster         = module.ecs.cluster_arn
   task_definition = aws_ecs_task_definition.pmd.arn
-  desired_count   = 3
+  desired_count   = 1
   launch_type     = "FARGATE"
 
   load_balancer {
-    target_group_arn = module.alb.target_group_arns[0]
+    target_group_arn = module.elb.target_group_arns[0]
     container_name   = "apex-pmd"
     container_port   = 5000
   }
@@ -62,10 +63,6 @@ resource "aws_ecs_service" "pmd" {
 resource "aws_iam_role" "pmd_execution_role" {
   name               = "apex-pmd-execution-task-role"
   assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
-  inline_policy {
-    name   = "inline-policy"
-    policy = data.aws_iam_policy_document.inline_policy.json
-  }
 }
 
 data "aws_iam_policy_document" "assume_role_policy" {
@@ -79,21 +76,7 @@ data "aws_iam_policy_document" "assume_role_policy" {
   }
 }
 
-data "aws_iam_policy_document" "inline_policy" {
-  statement {
-    effect = "Allow"
-    actions = [
-      "logs:CreateLogGroup"
-    ]
-    resources = [
-      "arn:aws:logs:${data.aws_region.current.name}:*"
-    ]
-  }
-}
-
 resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy_attachment" {
   role       = aws_iam_role.pmd_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
 }
-
-

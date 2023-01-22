@@ -1,24 +1,22 @@
-# Terraform, ECS + Fargate, ELB and PMD challenge
+# Terraform, ECS + Fargate, API Gateway + NLB and PMD challenge
 
-How can I create a basic workload that supports [flosumhub/apex-pmd:2.5.0 docker image](https://hub.docker.com/r/flosumhub/apex-pmd)? This repository tries to answer that.
+How can I create a ~~basic~~ not so basic workload that supports [flosumhub/apex-pmd:2.5.0 docker image](https://hub.docker.com/r/flosumhub/apex-pmd)? This repository tries to answer that.
 
-Why I did it? No one can.
-
-## How to create resources?
+## How do I create resources?
 
 ```bash
 # install terraform and...
 terraform init && terraform apply -auto-approve
 ```
 
-## How to destroy resources?
+## How do I destroy resources?
 
 ```bash
 # install terraform and...
 terraform destroy -auto-approve
 ```
 
-## How to test the workload?
+## How do I test the workload?
 
 If you trust me, just execute the following commands.
 
@@ -36,12 +34,12 @@ eval $(terraform output --raw post_run_curl_command)
 eval $(terraform output --raw post_token_curl_command)
 ```
 
-## How this image works?
+## How does this image works?
 
-If you trust me, try to read the source code.
+Try to read the source code.
 
 ```bash
-# index.js
+# index.js (main file)
 docker run -ti --rm flosumhub/apex-pmd:2.5.0 cat index.js
 
 # ApexMD.js
