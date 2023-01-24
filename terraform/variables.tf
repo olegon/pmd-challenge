@@ -10,7 +10,7 @@ variable "app_password" {
 
 variable "aws_region" {
   type    = string
-  default = "sa-east-1"
+  default = "us-east-1"
 }
 
 variable "pmd_log_group_name" {
