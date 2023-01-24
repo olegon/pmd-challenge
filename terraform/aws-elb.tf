@@ -11,7 +11,7 @@ module "elb" {
   subnets = module.vpc.private_subnets
 
   access_logs = {
-    bucket = "${data.aws_caller_identity.current.account_id}-pmd-elb-bucket"
+    bucket = "${data.aws_caller_identity.current.account_id}-pmd-elb-logs-bucket"
   }
 
   target_groups = [
