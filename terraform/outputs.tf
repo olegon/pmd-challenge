@@ -20,5 +20,5 @@ output "post_token_curl_command" {
 }
 
 output "post_run_curl_command" {
-  value = "curl -i -X POST '${module.api_gateway.apigatewayv2_api_api_endpoint}//apexPMD' -d '{ \"backUrl\": \"...salesforce uri...\", \"sId\": \"...salesforce token...\", \"jobId\": \"...unique job id...\", \"attList\": [], \"attRuls\": [], \"branchId\": \"\" }'"
+  value = "curl -i -X POST '${module.api_gateway.apigatewayv2_api_api_endpoint}//apexPMD' -H 'Content-Type: application/json' -d '{ \"backUrl\": \"...salesforce uri...\", \"sId\": \"...salesforce token...\", \"jobId\": \"...unique job id...\", \"attList\": [], \"attRuls\": [], \"branchId\": \"\" }'"
 }

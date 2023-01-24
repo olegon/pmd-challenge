@@ -4,12 +4,16 @@ How can I create a ~~basic~~ not so basic workload that supports [flosumhub/apex
 
 ## How do I create resources?
 
+Inside './terraform' directory,
+
 ```bash
 # install terraform and...
 terraform init && terraform apply -auto-approve
 ```
 
 ## How do I destroy resources?
+
+Inside './terraform' directory,
 
 ```bash
 # install terraform and...
@@ -18,7 +22,7 @@ terraform destroy -auto-approve
 
 ## How do I test the workload?
 
-If you trust me, just execute the following commands.
+If you trust me, inside './terraform' directory, just execute the following commands.
 
 ```bash
 # GET /
@@ -45,6 +49,10 @@ docker run -ti --rm flosumhub/apex-pmd:2.5.0 cat index.js
 # ApexMD.js
 docker run -ti --rm flosumhub/apex-pmd:2.5.0 cat ApexPMD.js
 ```
+
+## Why is there this nginx container?
+
+I need to log every request, including the entire body. Inside `./nginx-pmd-proxy-container`, there is the *Dockerfile* with a custom configuration.
 
 ## Is this workload expensive?
 

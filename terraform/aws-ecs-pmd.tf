@@ -1,3 +1,8 @@
+locals {
+  apex_pmd_nginx_container_name = "nginx-pmd-proxy"
+  apex_pmd_app_container_name   = "flosumhub-apex-pmd"
+}
+
 resource "aws_ecs_task_definition" "pmd" {
   family                   = "apex-pmd"
   requires_compatibilities = ["FARGATE"]
@@ -7,35 +12,55 @@ resource "aws_ecs_task_definition" "pmd" {
   execution_role_arn       = aws_iam_role.pmd_execution_role.arn
   container_definitions = jsonencode([
     {
-      name              = "apex-pmd"
-      image             = "flosumhub/apex-pmd:2.5.0"
-      cpu               = 256
-      memoryReservation = 256
-      memory            = 512
+      name              = local.apex_pmd_nginx_container_name
+      image             = var.nginx_proxy_container_image
+      cpu               = 128
+      memoryReservation = 128
+      memory            = 256
+      essential         = true
+      logConfiguration = {
+        logDriver = "awslogs",
+        options = {
+          awslogs-group         = var.pmd_log_group_name
+          awslogs-region        = data.aws_region.current.name
+          awslogs-stream-prefix = "logs"
+        }
+      }
+      portMappings = [
+        {
+          containerPort = 80
+          hostPort      = 80
+        }
+      ]
+    },
+    {
+      name              = local.apex_pmd_app_container_name
+      image             = var.apex_pmd_container_image
+      cpu               = 128
+      memoryReservation = 128
+      memory            = 256
       essential         = true
       logConfiguration = {
         logDriver = "awslogs",
         options = {
           # Im creating the log group because I want to control retention period
           # awslogs-create-group  = "true"
-          awslogs-group         = "ecs-awslog-flosunhub-apex-pmd"
+          awslogs-group         = var.pmd_log_group_name
           awslogs-region        = data.aws_region.current.name
-          awslogs-stream-prefix = "ecs-awslog-flosunhub-apex-pmd"
+          awslogs-stream-prefix = "logs"
         }
       }
-      portMappings = [
-        {
-          containerPort = 5000
-          hostPort      = 5000
-        }
-      ]
       environment = [
         # following security best practices! :p
         { "name" : "username", "value" : var.app_username },
-        { "name" : "password", "value" : var.app_password }
+        { "name" : "password", "value" : var.app_password },
+        # debugging container
+        { "name" : "NODE_ENV", "value" : "dev" },
+        { "name" : "DEBUG", "value" : "*" }
       ]
     }
   ])
+
 }
 
 resource "aws_ecs_service" "pmd" {
@@ -47,8 +72,8 @@ resource "aws_ecs_service" "pmd" {
 
   load_balancer {
     target_group_arn = module.elb.target_group_arns[0]
-    container_name   = "apex-pmd"
-    container_port   = 5000
+    container_name   = local.apex_pmd_nginx_container_name
+    container_port   = 80
   }
 
   network_configuration {

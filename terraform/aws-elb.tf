@@ -16,9 +16,9 @@ module "elb" {
 
   target_groups = [
     {
-      name_prefix      = "pmd-"
+      name_prefix      = "nginx-"
       backend_protocol = "TCP"
-      backend_port     = 5000
+      backend_port     = 80
       target_type      = "ip"
     }
   ]
