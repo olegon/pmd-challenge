@@ -20,10 +20,10 @@ variable "pmd_log_group_name" {
 
 variable "nginx_proxy_container_image" {
   type    = string
-  default = "olegon/nginx-pmd-proxy:latest"
+  default = "olegon/nginx-pmd-proxy:0.0.1"
 }
 
 variable "apex_pmd_container_image" {
   type    = string
-  default = "flosumhub/apex-pmd:2.5.0"
+  default = "flosumhub/apex-pmd:2.6.0"
 }

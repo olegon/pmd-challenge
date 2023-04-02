@@ -23,9 +23,9 @@ resource "aws_security_group" "pmd" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    # it wont work because NLB does not have SG, but it has a private IP that needs to healthcheck the application
-    # more info here: https://docs.aws.amazon.com/elasticloadbalancing/latest/network/target-group-register-targets.html#target-security-groups
-    # security_groups = [aws_security_group.alb.id] 
+    # Why am I using [module.vpc.vpc_cidr_block] ?
+    # NLB does not have SG, so I cant trust any SG. (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/target-group-register-targets.html#target-security-groups)
+    # NLB has to make healthchecks and there are ENIs on VPC
     cidr_blocks      = [module.vpc.vpc_cidr_block]
     ipv6_cidr_blocks = ["::/0"]
   }
@@ -38,27 +38,3 @@ resource "aws_security_group" "pmd" {
     ipv6_cidr_blocks = ["::/0"]
   }
 }
-
-resource "aws_security_group" "vpc_link" {
-  name        = "vpc_link"
-  description = "Allow API Gateway traffic"
-  vpc_id      = module.vpc.vpc_id
-
-  ingress {
-    description      = "HTTP"
-    from_port        = 80
-    to_port          = 80
-    protocol         = "tcp"
-    cidr_blocks      = [module.vpc.vpc_cidr_block]
-    ipv6_cidr_blocks = ["::/0"]
-  }
-
-  egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
-}
-

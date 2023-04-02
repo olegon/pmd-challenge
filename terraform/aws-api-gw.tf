@@ -1,69 +1,89 @@
-module "api_gateway" {
-  source = "terraform-aws-modules/apigateway-v2/aws"
+resource "aws_api_gateway_vpc_link" "this" {
+  name        = "apex-pmd"
+  description = "ELB from apex-pmd challange"
+  target_arns = [module.elb.lb_arn]
+}
 
-  name          = "pmd-api-gw"
-  description   = "Exposes PMD"
-  protocol_type = "HTTP"
-
-  #   cors_configuration = {
-  #     allow_headers = ["content-type", "x-amz-date", "authorization", "x-api-key", "x-amz-security-token", "x-amz-user-agent"]
-  #     allow_methods = ["*"]
-  #     allow_origins = ["*"]
-  #   }
-
-  # Custom domain
-  #   domain_name                 = "terraform-aws-modules.modules.tf"
-  #   domain_name_certificate_arn = "arn:aws:acm:eu-west-1:052235179155:certificate/2b3a7ed9-05e1-4f9e-952b-27744ba06da6"
-
-  #   Access logs
-  default_stage_access_log_destination_arn = aws_cloudwatch_log_group.api_gw.arn
-  # docs about logging format: https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-logging.html
-  default_stage_access_log_format = "$context.identity.sourceIp - - [$context.requestTime] \"$context.httpMethod $context.routeKey $context.protocol\" $context.status $context.responseLength $context.requestId"
-
-  # Routes and integrations
-  integrations = {
-    # docs about proxy integrations: https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-http.html
-    # docs about private integrations: https://docs.aws.amazon.com/pt_br/apigateway/latest/developerguide/http-api-develop-integrations-private.html
-    "GET /" = {
-      connection_type    = "VPC_LINK"
-      vpc_link           = "nlb"
-      integration_type   = "HTTP_PROXY"
-      integration_method = "GET"
-      integration_uri    = module.elb.http_tcp_listener_arns[0]
+resource "aws_api_gateway_rest_api" "this" {
+  body = jsonencode({
+    openapi = "3.0.1"
+    info = {
+      title   = "apex-pmd"
+      version = "1.0"
     }
-
-    "GET /server/log" = {
-      connection_type    = "VPC_LINK"
-      vpc_link           = "nlb"
-      integration_type   = "HTTP_PROXY"
-      integration_method = "GET"
-      integration_uri    = module.elb.http_tcp_listener_arns[0]
+    paths = {
+      "/" = {
+        get = {
+          x-amazon-apigateway-integration = {
+            httpMethod           = "GET"
+            connectionType       = "VPC_LINK"
+            connectionId         = aws_api_gateway_vpc_link.this.id
+            payloadFormatVersion = "1.0"
+            type                 = "HTTP_PROXY"
+            uri                  = "http://${module.elb.lb_dns_name}/"
+          }
+        }
+      }
+      "/server/log" = {
+        get = {
+          x-amazon-apigateway-integration = {
+            httpMethod           = "GET"
+            connectionType       = "VPC_LINK"
+            connectionId         = aws_api_gateway_vpc_link.this.id
+            payloadFormatVersion = "1.0"
+            type                 = "HTTP_PROXY"
+            uri                  = "http://${module.elb.lb_dns_name}/server/log"
+          }
+        }
+      }
+      "/apexPMD" = {
+        post = {
+          x-amazon-apigateway-integration = {
+            httpMethod           = "POST"
+            connectionType       = "VPC_LINK"
+            connectionId         = aws_api_gateway_vpc_link.this.id
+            payloadFormatVersion = "1.0"
+            type                 = "HTTP_PROXY"
+            uri                  = "http://${module.elb.lb_dns_name}/apexPMD"
+          }
+        }
+      }
+      "/oauth/token" = {
+        post = {
+          x-amazon-apigateway-integration = {
+            httpMethod           = "POST"
+            connectionType       = "VPC_LINK"
+            connectionId         = aws_api_gateway_vpc_link.this.id
+            payloadFormatVersion = "1.0"
+            type                 = "HTTP_PROXY"
+            uri                  = "http://${module.elb.lb_dns_name}/oauth/token"
+          }
+        }
+      }
     }
+  })
 
-    "POST /apexPMD" = {
-      connection_type    = "VPC_LINK"
-      vpc_link           = "nlb"
-      integration_type   = "HTTP_PROXY"
-      integration_method = "POST"
-      integration_uri    = module.elb.http_tcp_listener_arns[0]
-    }
+  name = "apex-pmd"
 
-    "POST /oauth/token" = {
-      connection_type    = "VPC_LINK"
-      vpc_link           = "nlb"
-      integration_type   = "HTTP_PROXY"
-      integration_method = "POST"
-      integration_uri    = module.elb.http_tcp_listener_arns[0]
-    }
+  endpoint_configuration {
+    types = ["REGIONAL"]
+  }
+}
+
+resource "aws_api_gateway_deployment" "this" {
+  rest_api_id = aws_api_gateway_rest_api.this.id
+
+  triggers = {
+    redeployment = sha1(jsonencode(aws_api_gateway_rest_api.this.body))
   }
 
-  vpc_links = {
-    nlb = {
-      security_group_ids = [aws_security_group.vpc_link.id]
-      subnet_ids         = module.vpc.private_subnets
-    }
+  lifecycle {
+    create_before_destroy = true
   }
+}
 
-  create_api_domain_name = false
-  create_vpc_link        = true
+resource "aws_api_gateway_stage" "latest" {
+  deployment_id = aws_api_gateway_deployment.this.id
+  rest_api_id   = aws_api_gateway_rest_api.this.id
+  stage_name    = "latest"
 }
