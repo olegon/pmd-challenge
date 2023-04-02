@@ -19,25 +19,23 @@ function handleAnalysisRequest(req, res) {
   try {
     console.log('Request body: %o', req.body);
     const { backUrl, sId, jobId, attList, attRuls, branchId } = req.body;
-    const init = new ApexPMD(backUrl, sId, jobId, attList, attRuls, branchId);
+    
+    async function controlAsync() {
+      try {
+        console.log('Starting PMD analysis.')
 
-    const controlAsync = async _ => {
-      console.log('Starting PMD analysis.')
+        const init = new ApexPMD(backUrl, sId, jobId, attList, attRuls, branchId);
+        const steps = [ init.getAttachment, init.getRuls, init.runPMD, init.saveResults, init.updateObjects, init.cleanFolder ];
 
-      while (init.isContinue) {
-        const steps = [
-          init.getAttachment,
-          init.getRuls,
-          init.runPMD,
-          init.saveResults,
-          init.updateObjects,
-          init.cleanFolder
-        ]
-
-        for (const step of steps) {
-          const result = await step.call(init);
-          console.log('Step %s => %o', step.name, result);
+        while (init.isContinue) {
+          for (const step of steps) {
+            const result = await step.call(init);
+            console.log('Step %s => %o', step.name, result);
+          }
         }
+      } catch (error) {
+        console.error(error);
+        throw error;
       }
     };
 
@@ -45,13 +43,15 @@ function handleAnalysisRequest(req, res) {
 
     res.status(200).json({ isSuccess: true, opStatus: 'INPROGRESS' });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).json({ isSuccess: false, opStatus: 'INTERNALERROR' });
   }
-
 }
 
+// why? :(
 function handleTokenRequest(req, res) {
+  console.log('Starting to handle token request.');
+
   const user = "admin";
   const pass = "n2c99skEwmWvt3Q1p7d11ne4FKwPqCs85N2RvwNdlfMw4I3NL";
   const username = req.query.username;
@@ -81,6 +81,5 @@ function handleTokenRequest(req, res) {
     }
   } else {
     res.send('not authorization');
-
   }
 }

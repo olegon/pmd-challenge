@@ -1,6 +1,6 @@
 #!/bin/bash
 
-IMAGE_NAME=olegon/custom-apex-pmd:0.0.1
+IMAGE_NAME=olegon/custom-apex-pmd:0.0.2
 
 set -e
 

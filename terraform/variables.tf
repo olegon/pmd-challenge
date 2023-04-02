@@ -13,6 +13,11 @@ variable "aws_region" {
   default = "us-east-1"
 }
 
+variable "aws_vpc_cidr" {
+  type    = string
+  default = "10.0.0.0/16"
+}
+
 variable "pmd_log_group_name" {
   type    = string
   default = "ecs-awslogs-flosunhub-apex-pmd"

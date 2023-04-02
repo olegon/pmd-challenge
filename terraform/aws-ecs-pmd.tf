@@ -81,7 +81,7 @@ resource "aws_ecs_service" "pmd" {
     # assign_public_ip = true is required to pull images from docker hub when it on a public subnet
     # docs: https://docs.aws.amazon.com/AmazonECS/latest/userguide/fargate-task-networking.html
     assign_public_ip = false
-    security_groups  = [aws_security_group.pmd.id]
+    security_groups  = [aws_security_group.pmd_service.id]
   }
 }
 
@@ -101,7 +101,7 @@ data "aws_iam_policy_document" "assume_role_policy" {
   }
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy_attachment" {
+resource "aws_iam_role_policy_attachment" "pmd_execution_role_ecs_policy_attachment" {
   role       = aws_iam_role.pmd_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
 }
