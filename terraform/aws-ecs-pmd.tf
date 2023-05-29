@@ -35,7 +35,7 @@ resource "aws_ecs_task_definition" "pmd" {
     },
     {
       name              = local.apex_pmd_app_container_name
-      image             = var.apex_pmd_container_image
+      image             = "${aws_ecr_repository.pmd.repository_url}:${var.apex_pmd_container_image_version}" # var.apex_pmd_container_image
       cpu               = 128
       memoryReservation = 128
       memory            = 256

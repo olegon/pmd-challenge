@@ -30,5 +30,10 @@ variable "nginx_proxy_container_image" {
 
 variable "apex_pmd_container_image" {
   type    = string
-  default = "flosumhub/apex-pmd:2.6.0"
+  default = "flosumhub/apex-pmd"
+}
+
+variable "apex_pmd_container_image_version" {
+  type    = string
+  default = "2.7.0"
 }
