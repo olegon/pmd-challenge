@@ -24,18 +24,6 @@ resource "aws_api_gateway_rest_api" "this" {
           }
         }
       }
-      "/server/log" = {
-        get = {
-          x-amazon-apigateway-integration = {
-            httpMethod           = "GET"
-            connectionType       = "VPC_LINK"
-            connectionId         = aws_api_gateway_vpc_link.this.id
-            payloadFormatVersion = "1.0"
-            type                 = "HTTP_PROXY"
-            uri                  = "http://${module.elb.lb_dns_name}/server/log"
-          }
-        }
-      }
       "/apexPMD" = {
         post = {
           x-amazon-apigateway-integration = {
